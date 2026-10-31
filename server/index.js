@@ -3734,7 +3734,17 @@ if (fs.existsSync(frontendIndexPath)) {
     res.sendFile(frontendIndexPath)
   })
 } else {
-  app.get('/', (req, res) => {
+  app.get('*', (req, res, next) => {
+    if (req.path === '/api' || req.path.startsWith('/api/')) {
+      next()
+      return
+    }
+
+    if (fs.existsSync(frontendIndexPath)) {
+      res.sendFile(frontendIndexPath)
+      return
+    }
+
     res.send('Socket server is running. Start Vite for the frontend or build the production client.')
   })
 }
