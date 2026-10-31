@@ -3,7 +3,8 @@ import net from 'node:net'
 import path from 'node:path'
 
 const projectRoot = process.cwd()
-const serverPort = Number(process.env.PORT || 4000)
+const previewPort = Number(process.env.PORT || 4000)
+const serverPort = Number(process.env.API_PORT || (previewPort + 1))
 const isHostedProduction = process.env.RENDER === 'true' || process.env.NODE_ENV === 'production'
 const children = new Set()
 let shuttingDown = false
@@ -32,10 +33,10 @@ async function waitForPort(port, timeoutMs = 10_000) {
   return false
 }
 
-function startNodeProcess(argumentsList, label) {
+function startNodeProcess(argumentsList, label, environment = process.env) {
   const child = spawn(process.execPath, argumentsList, {
     cwd: projectRoot,
-    env: process.env,
+    env: environment,
     stdio: 'inherit',
     windowsHide: true,
   })
@@ -85,5 +86,9 @@ if (isHostedProduction) {
     }
   }
 
-  startNodeProcess([path.join('node_modules', 'vite', 'bin', 'vite.js')], 'Vite')
+    startNodeProcess(
+      [path.join('node_modules', 'vite', 'bin', 'vite.js'), '--host', '0.0.0.0', '--port', String(previewPort)],
+      'Vite',
+      { ...process.env, PORT: String(serverPort) },
+    )
 }
