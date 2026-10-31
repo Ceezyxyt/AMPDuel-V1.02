@@ -32,8 +32,14 @@ export default function App() {
   const loading = useAuth((s) => s.loading)
   const [initialPageReady, setInitialPageReady] = useState(false)
   const [initialWalletReady, setInitialWalletReady] = useState(false)
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false)
   const handleInitialPageReady = useCallback(() => setInitialPageReady(true), [])
   const handleInitialWalletReady = useCallback(() => setInitialWalletReady(true), [])
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setLoadingTimedOut(true), 8000)
+    return () => window.clearTimeout(timeoutId)
+  }, [])
 
   // Restore session + connect socket once on mount.
   useEffect(() => {
@@ -49,7 +55,7 @@ export default function App() {
         />
       </BrowserRouter>
       <NotificationCenter />
-      {(loading || !initialPageReady || !initialWalletReady) && (
+      {(loading || ((!initialPageReady || !initialWalletReady) && !loadingTimedOut)) && (
         <div className="loading-screen" role="status" aria-label="Loading BloxDice">
           <div className="loading-screen-content">
             <img
